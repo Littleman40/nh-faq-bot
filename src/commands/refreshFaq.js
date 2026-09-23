@@ -1,11 +1,15 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
-const { fetchFaqsFromGitBook } = require('../gitbook');
-const { writeCache } = require('../cache');
-const { canUseRefreshHere } = require('../access');
+const { fetchFaqsFromGitBook, writeCache } = require('../faqData');
 
 const data = new SlashCommandBuilder()
   .setName('refresh-faq')
   .setDescription('Manually rebuild the cached FAQ list from GitBook');
+
+function canUseRefreshHere(interaction, config) {
+  const ids = [interaction.channelId];
+  if (interaction.channel?.isThread?.()) ids.push(interaction.channel.parentId);
+  return ids.some((id) => config.refreshFaqChannels.includes(id));
+}
 
 async function execute(interaction, config) {
   if (!canUseRefreshHere(interaction, config)) {

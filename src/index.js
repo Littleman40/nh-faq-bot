@@ -1,10 +1,19 @@
 require('dotenv').config();
-const path = require('path');
 const { Client, GatewayIntentBits, MessageFlags } = require('discord.js');
 
-const config = require(path.join(__dirname, '..', 'config.json'));
 const faqCommand = require('./commands/faq');
 const refreshFaqCommand = require('./commands/refreshFaq');
+
+function parseList(value) {
+  return (value || '').split(',').map((v) => v.trim()).filter(Boolean);
+}
+
+const config = {
+  publicFaqChannels: parseList(process.env.PUBLIC_FAQ_CHANNELS),
+  whitelistedRoles: parseList(process.env.WHITELISTED_ROLES),
+  refreshFaqChannels: parseList(process.env.REFRESH_FAQ_CHANNELS),
+  helpChannelLink: process.env.HELP_CHANNEL_LINK,
+};
 
 const commands = new Map([
   [faqCommand.data.name, faqCommand],
@@ -15,8 +24,12 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-client.once('ready', () => {
+client.once('clientReady', async () => {
   console.log(`Logged in as ${client.user.tag}`);
+  await client.application.commands.set(
+    [faqCommand.data.toJSON(), refreshFaqCommand.data.toJSON()],
+    process.env.GUILD_ID
+  );
 });
 
 client.on('interactionCreate', async (interaction) => {

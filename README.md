@@ -9,6 +9,5 @@ Discord Bot needs `bot`, `application.commands`, `send messages` and `use slash 
 
 ```bash
 npm install
-npm run deploy-commands
 npm start
 ```
